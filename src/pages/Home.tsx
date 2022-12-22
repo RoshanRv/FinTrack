@@ -105,12 +105,12 @@ const Home = () => {
 
                                 <div className="flex items-center justify-between gap-x-4">
                                     <h1>{`INR Price: `}</h1>
-                                    <h1>{`$ ${coinDetails.market_data.current_price.inr}`}</h1>
+                                    <h1>{`₹ ${coinDetails.market_data.current_price.inr}`}</h1>
                                 </div>
 
                                 <div className="flex items-center justify-between gap-x-4">
                                     <h1>{`USD Price: `}</h1>
-                                    <h1>{`₹ ${coinDetails.market_data.current_price.usd}`}</h1>
+                                    <h1>{`$ ${coinDetails.market_data.current_price.usd}`}</h1>
                                 </div>
 
                                 <div className="flex items-center justify-between gap-x-4">
