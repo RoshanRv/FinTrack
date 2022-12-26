@@ -45,7 +45,7 @@ const useAxios = (coin: string) => {
             setCoinDetails(coinDetails.data)
 
             const chartDetails = await axios.get(
-                `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=inr&days=7`
+                `https://api.coingecko.com/api/v3/coins/${coin}/market_chart?vs_currency=inr&days=1&interval=minutes`
             )
 
             const chartCoords = chartDetails.data.prices.map(
