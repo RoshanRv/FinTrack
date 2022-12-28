@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 import useAxios from "../hooks/useAxios"
 import {
     Chart as ChartJS,
@@ -16,6 +16,7 @@ import {
 import { Line } from "react-chartjs-2"
 import moment from "moment"
 import Spinner from "../components/Spinner"
+import calcMovingAvg from "../utils/calcMovingAvg"
 
 ChartJS.register(
     CategoryScale,
@@ -28,14 +29,51 @@ ChartJS.register(
     Legend
 )
 
+const pricesWs = new WebSocket("wss://ws.coincap.io/prices?assets=bitcoin")
+
 const Crypto = () => {
     const [coin, setCoin] = useState("bitcoin")
 
-    const { chartDetails, coinDetails, isError, isLoading } = useAxios(coin)
+    const timeRef = useRef(0)
+    const chartRef = useRef<HTMLDivElement>(null)
+
+    const {
+        chartDetails,
+        coinDetails,
+        isError,
+        setMovingAvgCoords,
+        isLoading,
+        movingAvgCoords,
+        setChartDetails,
+        spikeValue,
+        setSpikeValue,
+        spikeChartCoords,
+    } = useAxios(coin)
 
     const labels = !isLoading
-        ? chartDetails.map((data) => moment(data.x).format("D/ hh:mm"))
+        ? chartDetails.map((data) => moment(data.x).format("hh:mm"))
         : [""]
+
+    pricesWs.onmessage = function (msg) {
+        if (Date.now() >= timeRef.current + 60000) {
+            if (!isLoading) {
+                // 1 min = 600000ms
+                timeRef.current = Date.now()
+
+                const data = [
+                    ...chartDetails,
+                    { x: Date.now(), y: Number(JSON.parse(msg.data).bitcoin) },
+                ]
+                setChartDetails(data)
+
+                console.log({
+                    bitcoin: JSON.parse(msg.data).bitcoin,
+                    time: moment(timeRef.current).format("hh:mm"),
+                    t: Date.now(),
+                })
+            }
+        }
+    }
 
     const data = {
         labels,
@@ -49,21 +87,20 @@ const Crypto = () => {
             },
             {
                 label: "Moving Average",
-                data: !isLoading
-                    ? chartDetails.map((data) => ({
-                          x: data.x,
-                          y: chartDetails
-                              ? chartDetails.reduce(
-                                    (acc, curr) => Number(curr.y) + Number(acc),
-                                    0
-                                ) / chartDetails.length
-                              : "",
-                      }))
-                    : [{}],
+                data: !isLoading ? movingAvgCoords : [{}],
                 borderColor: "rgb(53, 162, 25)",
                 borderWidth: 2,
                 pointBackgroundColor: "transparent",
                 pointBorderColor: "transparent",
+            },
+            {
+                label: "Spike Point",
+                data: !isLoading ? spikeChartCoords : [{}],
+                borderColor: "rgb(253, 100, 25)",
+                borderWidth: 0,
+                pointBackgroundColor: "rgb(253, 100, 25)",
+                pointBorderColor: "rgb(253, 100, 25)",
+                pointBorderWidth: 7,
             },
         ],
     }
@@ -80,6 +117,17 @@ const Crypto = () => {
             },
         },
     }
+
+    useEffect(() => {
+        chartRef.current?.scrollTo({ left: 100000000 })
+
+        if (!isLoading) {
+            const movingAvgCoords = calcMovingAvg(chartDetails)
+
+            setMovingAvgCoords(movingAvgCoords.movingAvgDetails)
+            setSpikeValue(movingAvgCoords.spike)
+        }
+    }, [chartDetails])
 
     return (
         <section className="p-6 ">
@@ -136,8 +184,8 @@ const Crypto = () => {
                             </div>
                         </div>
                         {/*   Chart   */}
-                        <div className="w-full overflow-x-auto">
-                            <div className="relative h-[50vh] w-[400vw] ">
+                        <div ref={chartRef} className="w-full overflow-x-auto">
+                            <div className="relative h-[50vh] w-[1500vw] ">
                                 <Line data={data} options={options} />
                             </div>
                         </div>
