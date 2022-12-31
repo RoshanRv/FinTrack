@@ -130,15 +130,11 @@ const Crypto = () => {
     }, [chartDetails])
 
     return (
-        <section className="p-6 ">
-            {/*     Title     */}
-            <h1 className="text-4xl font-semibold border-b-2 border-gray-500 p-2">
-                Coin Tracker
-            </h1>
+        <section className="p-6 min-h-screen">
             {!isLoading ? (
                 <>
-                    <div className="mt-8 text-center">
-                        {/*    Select Coin      */}
+                    {/* <div className="mt-8 text-center">
+                           Select Coin     
                         <h1 className="text-xl">Select Coin</h1>
 
                         <select
@@ -150,12 +146,12 @@ const Crypto = () => {
                             <option value="ethereum">Ethereum</option>
                             <option value="solana">Solana</option>
                         </select>
-                    </div>
+                    </div> */}
 
                     <div className=" flex flex-col-reverse gap-x-8 p-4 items-center justify-around mt-10 gap-y-20">
                         {/* Details */}
 
-                        <div className="p-6 rounded-lg shadow-lg shadow-black relative flex flex-col gap-y-2 w-max">
+                        <div className="p-6 bg-white rounded-lg shadow-lg shadow-black relative flex flex-col gap-y-2 w-max">
                             <div className="p-1 rounded-full absolute top-0 -translate-y-1/2 left-1/2 -translate-x-1/2 bg-white shadow-md shadow-black/50">
                                 <img
                                     src={coinDetails.image.small}
@@ -184,7 +180,10 @@ const Crypto = () => {
                             </div>
                         </div>
                         {/*   Chart   */}
-                        <div ref={chartRef} className="w-full overflow-x-auto">
+                        <div
+                            ref={chartRef}
+                            className="w-full overflow-x-auto bg-white/80 p-2 rounded-md shadow-lg"
+                        >
                             <div className="relative h-[50vh] w-[1500vw] ">
                                 <Line data={data} options={options} />
                             </div>
